@@ -29,13 +29,19 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
 
+    public $password_hash;
+    public $verification_token;
+    public $status;
+    public $created_at;
+    public $updated_at;
+    public $username;
 
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%user}}';
+        return '{{%users}}';
     }
 
     /**
@@ -115,6 +121,18 @@ class User extends ActiveRecord implements IdentityInterface
             'verification_token' => $token,
             'status' => self::STATUS_INACTIVE
         ]);
+    }
+    
+    /**
+     * Generating username for new user by name
+     *
+     * @param  string $name
+     * @return void
+     */
+    public function generateUsername($name)
+    {
+        $username = preg_replace('/['. Yii::$app->params['user.blockedChars'].']/', '', $name);
+        $this->setUsername($username);
     }
 
     /**
@@ -209,5 +227,16 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+    
+    /**
+     * setUsername
+     * Setting username
+     * @param  string $username
+     * @return void
+     */
+    public function setUsername($username)
+    {
+        $this->username = $username;
     }
 }
