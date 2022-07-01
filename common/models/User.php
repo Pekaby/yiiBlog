@@ -62,53 +62,116 @@ class User extends \yii\db\ActiveRecord
             'status' => 'Status',
         ];
     }
-
+    
+    /**
+     * findIdentity
+     *
+     * @param  mixed $id
+     * @return void
+     */
     public static function findIdentity($id)
     {
         return static::findOne($id);
     }
-
+    
+    /**
+     * findIdentityByAccessToken
+     *
+     * @param  mixed $token
+     * @param  mixed $type
+     * @return void
+     */
     public static function findIdentityByAccessToken($token, $type = null)
     {
         return static::findOne(['access_token' => $token]);
     }
-
+    
+    /**
+     * validateAuthKey
+     *
+     * check user auth key with model
+     * 
+     * @param  mixed $authKey
+     * @return bool 
+     */
     public function validateAuthKey($authKey)
     {
         return $this->auth_key === $authKey;
     }
-
+    
+    /**
+     * generateSalt
+     *
+     * generating string(15) for password
+     * 
+     * @return string
+     */
     public function generateSalt()
     {
         return Yii::$app->security->generateRandomString(15);
     }
-    
+        
+    /**
+     * generateAuthKey
+     *
+     * @return void
+     */
     public function generateAuthKey()
     {
         $this->auth_key = Yii::$app->security->generateRandomString();
     }
-
+    
+    /**
+     * setPassword
+     *
+     * Creating password hash for savin into db
+     * 
+     * @param  mixed $password
+     * @return void
+     */
     public function setPassword($password)
     {
         $this->salt = $this->generateSalt();
         $this->password = Yii::$app->security->generatePasswordHash($this->salt.$password.Yii::$app->params['auth.passwordSalt']);
     }
-
+    
+    /**
+     * setTime
+     *
+     * Setting time of creating user
+     * 
+     * @return int
+     */
     public function setTime()
     {
         $this->time = time();
     }
-
+    
+    /**
+     * getId
+     * 
+     * @return string
+     */
     public function getId()
     {
         return $this->getPrimaryKey();
     }
-
+    
+    /**
+     * getAuthKey
+     *
+     * @return string
+     */
     public function getAuthKey()
     {
         return $this->auth_key;
     }
-
+    
+    /**
+     * validatePassword
+     *
+     * @return bool
+     */
     public function validatePassword()
     {
         return Yii::$app->security->validatePassword($this->salt.$this->password.Yii::$app->params['auth.passwordSalt'], $this->password_hash);
