@@ -159,6 +159,11 @@ class SiteController extends Controller
             return $this->goHome();
         }
 
+        if ($model->load(Yii::$app->request->post())) {
+            $model->signup();
+            exit();
+        }
+
         return $this->render('signup', [
             'model' => $model,
         ]);

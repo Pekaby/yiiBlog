@@ -9,49 +9,27 @@ use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 
 /**
- * User model
+ * This is the model class for table "users".
  *
- * @property integer $id
- * @property string $username
- * @property string $password_hash
- * @property string $password_reset_token
- * @property string $verification_token
- * @property string $email
- * @property string $auth_key
- * @property integer $status
- * @property integer $created_at
- * @property integer $updated_at
- * @property string $password write-only password
+ * @property int $id
+ * @property string|null $name
+ * @property string|null $username
+ * @property string|null $email
+ * @property string|null $password
+ * @property string|null $salt
+ * @property string|null $auth_key
+ * @property string|null $email_key
+ * @property int $time
+ * @property int|null $status
  */
-class User extends ActiveRecord implements IdentityInterface
+class User extends \yii\db\ActiveRecord
 {
-    const STATUS_DELETED = 0;
-    const STATUS_INACTIVE = 9;
-    const STATUS_ACTIVE = 10;
-
-    public $email;
-    public $password;
-    public $password_hash;
-    public $user_salt;
-    public $username;
-    public $time;
-
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%users}}';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
-    {
-        return [
-            TimestampBehavior::className(),
-        ];
+        return 'users';
     }
 
     /**
@@ -60,8 +38,28 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            ['status', 'default', 'value' => self::STATUS_INACTIVE],
-            ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
+            [['username', 'email', 'password', 'salt', 'auth_key', 'email_key'], 'string'],
+            [['time', 'status'], 'integer'],
+            [['name'], 'string', 'max' => 255],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'name' => 'Name',
+            'username' => 'Username',
+            'email' => 'Email',
+            'password' => 'Password',
+            'salt' => 'Salt',
+            'auth_key' => 'Auth_Key',
+            'email_key' => 'Email_Key',
+            'time' => 'Time',
+            'status' => 'Status',
         ];
     }
 
@@ -77,12 +75,12 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function validateAuthKey($authKey)
     {
-        return $this->authKey === $authKey;
+        return $this->auth_key === $authKey;
     }
 
     public function generateSalt()
     {
-        $this->user_salt = Yii::$app->security->generateRandomString(15);
+        return Yii::$app->security->generateRandomString(15);
     }
     
     public function generateAuthKey()
@@ -92,9 +90,8 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function setPassword($password)
     {
-        $this->password = $password;
-        $this->user_salt = $this->generateSalt();
-        $this->password_hash = Yii::$app->security->password_hash($this->user_salt.$this->password.Yii::$app->params['auth.passwordSalt'], 'sha256');
+        $this->salt = $this->generateSalt();
+        $this->password = Yii::$app->security->generatePasswordHash($this->salt.$password.Yii::$app->params['auth.passwordSalt']);
     }
 
     public function setTime()
@@ -116,6 +113,4 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return Yii::$app->security->validatePassword($this->salt.$this->password.Yii::$app->params['auth.passwordSalt'], $this->password_hash);
     }
-
-
 }

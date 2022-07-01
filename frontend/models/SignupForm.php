@@ -24,9 +24,9 @@ class SignupForm extends Model
     public function rules()
     {
         return [
-            ['name', 'trim'],
-            ['name', 'required'],
-            ['name', 'string', 'min' => 2, 'max' => 255],
+            // ['name', 'trim'],
+            // ['name', 'required'],
+            // ['name', 'string', 'min' => 2, 'max' => 255],
 
             ['email', 'trim'],
             ['email', 'required'],
@@ -56,12 +56,11 @@ class SignupForm extends Model
         }
         
         $user = new User();
-        $user->name = $this->name;
+
+        $user->setPassword($this->password);
         $user->email = $this->email;
-        $user->generateUsername($this->name);
-        // $user->setPassword($this->password);
+        $user->setTime();
         $user->generateAuthKey();
-        // $user->generateEmailVerificationToken();
 
         return $user->save();
     }
